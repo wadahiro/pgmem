@@ -21,9 +21,12 @@ import (
 )
 
 // memoryMax is the linear-memory address space reserved per instance
-// (wasm32 allows up to 4 GiB; 2 GiB matches the module's declared
-// maximum). Only touched pages become resident.
-const memoryMax = 2 << 30
+// (wasm32 allows up to 4 GiB; the module declares 2 GiB). Only touched
+// pages become resident, but where the kernel checks a mapping against the
+// free memory (Linux before 5.2, vm.overcommit_memory=0) the whole mapping
+// must fit, so it is kept small: 512 MiB of private heap and 512 MiB for
+// the shared segments (shmBase in internal/engine).
+const memoryMax = 1 << 30
 
 func mustLookup(module, name string) host.Fn {
 	fn, ok := host.Lookup(module, name)

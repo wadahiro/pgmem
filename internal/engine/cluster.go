@@ -18,10 +18,12 @@ import (
 // Shared memory window in every process's linear memory: the heap grows
 // below shmBase, the System V segments (the main segment, dynamic shared
 // memory for parallel workers and the stats system) are placed from
-// shmBase up. 512 MiB of segments and 1.5 GiB of private heap per process.
+// shmBase up. 512 MiB of segments and 512 MiB of private heap per process (1 GiB of address space: a Linux before 5.2
+// with vm.overcommit_memory=0 refuses a mapping larger than the memory it counts as free, and every instance maps its
+// whole address space).
 const (
-	shmBase  = 0x6000_0000
-	shmLimit = 0x7FFF_0000
+	shmBase  = 0x2000_0000
+	shmLimit = 0x3FFF_0000
 )
 
 // Cluster is a running postmaster with its child processes: PostgreSQL's
