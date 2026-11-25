@@ -101,6 +101,10 @@ func Start(ctx context.Context, opts Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	if opts.Log != nil && e.Log == nil {
+		// the engine reports why a process failed to start (instantiate, pgmem_init) only through its own Log
+		e.Log = opts.Log
+	}
 	fs, err := e.BaseFS()
 	if err != nil {
 		return nil, err
