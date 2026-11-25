@@ -34,6 +34,9 @@ type Cluster struct {
 	pm   *host.Process
 	port int
 
+	// closing counts the processes whose instance is still being closed (its 2 GiB mapping unmapped)
+	closing sync.WaitGroup
+
 	mu  sync.Mutex
 	log bytes.Buffer
 	// Stderr receives the server log (nil = keep in Log()).
@@ -98,7 +101,9 @@ func (cl *Cluster) Log() string {
 
 // exec runs one process on its own goroutine (host.Cluster.Exec).
 func (cl *Cluster) exec(p *host.Process) {
+	cl.closing.Add(1)
 	go func() {
+		defer cl.closing.Done()
 		e := cl.e
 		status := int32(0)
 		var mod guest.Instance
@@ -225,9 +230,21 @@ func (cl *Cluster) Kill() {
 			cl.e.logf("pgmem: process %d did not exit after SIGKILL", p.Pid)
 		}
 	}
-	// releasing the segment files (tens of MB of pages) takes a few
-	// milliseconds the caller need not wait for
-	go c.Close()
+	// Wait until every instance is closed (its 2 GiB mapping unmapped) and the segment files are released. A
+	// cluster started right after (Restore, Reset) would otherwise map its own 2 GiB per process on top of the old
+	// ones: where the kernel checks a mapping against the free memory (vm.overcommit_memory=0 before Linux 5.2), the
+	// overlap makes mmap fail with ENOMEM.
+	done := make(chan struct{})
+	go func() {
+		cl.closing.Wait()
+		c.Close()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		cl.e.logf("pgmem: instances still closing 5 s after SIGKILL")
+	}
 }
 
 // Shutdown stops the cluster: a fast shutdown (SIGINT), then an immediate
