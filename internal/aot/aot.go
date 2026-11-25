@@ -70,7 +70,7 @@ func (f *Factory) Instantiate(ctx context.Context, h *host.Host) (guest.Instance
 		// Linear memory is a private copy-on-write view of the image, with
 		// the data segments in place and zero pages above, sparse up to
 		// the whole growable range; Close unmaps it.
-		mem, err := img.Memory(memoryMax)
+		mem, err := mapImage(h, img)
 		if err != nil {
 			return nil, fmt.Errorf("aot: map the data image: %w", err)
 		}
