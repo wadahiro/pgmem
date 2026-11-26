@@ -24,9 +24,14 @@ import (
 // (wasm32 allows up to 4 GiB; the module declares 2 GiB). Only touched
 // pages become resident, but where the kernel checks a mapping against the
 // free memory (Linux before 5.2, vm.overcommit_memory=0) the whole mapping
-// must fit, so it is kept small: 512 MiB of private heap and 512 MiB for
-// the shared segments (shmBase in internal/engine).
-const memoryMax = 1 << 30
+// must fit, so it is kept small: by default 512 MiB of private heap and
+// 512 MiB for the shared segments (shmBase in internal/engine). SetMemoryMax
+// changes it before the first instance starts.
+var memoryMax = 1 << 30
+
+// SetMemoryMax sets the address space reserved per instance, in bytes. It
+// must be called before the first instance is started.
+func SetMemoryMax(n int) { memoryMax = n }
 
 func mustLookup(module, name string) host.Fn {
 	fn, ok := host.Lookup(module, name)

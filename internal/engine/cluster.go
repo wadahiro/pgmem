@@ -21,10 +21,14 @@ import (
 // shmBase up. 512 MiB of segments and 512 MiB of private heap per process (1 GiB of address space: a Linux before 5.2
 // with vm.overcommit_memory=0 refuses a mapping larger than the memory it counts as free, and every instance maps its
 // whole address space).
-const (
-	shmBase  = 0x2000_0000
-	shmLimit = 0x3FFF_0000
+var (
+	shmBase  uint32 = 0x2000_0000
+	shmLimit uint32 = 0x3FFF_0000
 )
+
+// SetSharedWindow places the shared segments at shmBase, up to shmLimit.
+// It must be called before the first cluster is started.
+func SetSharedWindow(base, limit uint32) { shmBase, shmLimit = base, limit }
 
 // Cluster is a running postmaster with its child processes: PostgreSQL's
 // own multi-process model, each process a module instance on its own

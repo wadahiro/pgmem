@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -37,12 +38,17 @@ func main() {
 		params   = flag.String("params", "", "extra postgres -c settings, comma separated (e.g. shared_buffers=32MB,log_statement=all)")
 		verbose  = flag.Bool("log", false, "print the server log to stderr")
 		noStdin  = flag.Bool("no-stdin", false, "do not read control requests from stdin and do not exit when it is closed")
+		heapMiB  = flag.Int("heap-mb", envInt("PGMEM_HEAP_MB", 512), "private heap each PostgreSQL process may use, in MiB (address space reserved up front; env PGMEM_HEAP_MB)")
+		shmMiB   = flag.Int("shm-mb", envInt("PGMEM_SHM_MB", 512), "shared segments window of each process, in MiB (env PGMEM_SHM_MB)")
 		control  = flag.String("control", "", "also serve the control protocol on this loopback address (e.g. 127.0.0.1:0) for other processes")
 	)
 	// accepted for wrappers that still pass it: connections no longer share
 	// a session, so there is no wait to bound
 	flag.Duration("wait-timeout", 0, "deprecated; ignored")
 	flag.Parse()
+	if err := pgmem.SetMemory(*heapMiB, *shmMiB); err != nil {
+		log.Fatal(err)
+	}
 
 	base := pgmem.Options{}
 	for _, p := range strings.Split(*params, ",") {
@@ -102,4 +108,12 @@ func buildVersion() string {
 		return bi.Main.Version
 	}
 	return "(devel)"
+}
+
+// envInt reads an integer from the environment, def when unset or invalid.
+func envInt(name string, def int) int {
+	if v, err := strconv.Atoi(os.Getenv(name)); err == nil {
+		return v
+	}
+	return def
 }
