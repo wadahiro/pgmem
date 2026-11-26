@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.shibukawa.pgmem</groupId>
+  <artifactId>pgmem-native</artifactId>
+  <version>1.18.2-p4</version>
+  <packaging>pom</packaging>
+  <name>pgmem-native</name>
+  <description>The pgmem server binary, one jar per platform selected by classifier (patched build of 1.18.2: engine log, kill waits for instances to close, 1 GiB address space per instance by default, settable with PGMEM_HEAP_MB and PGMEM_SHM_MB)</description>
+  <url>https://github.com/wadahiro/pgmem</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:https://github.com/wadahiro/pgmem.git</connection>
+    <url>https://github.com/wadahiro/pgmem</url>
+  </scm>
+</project>
