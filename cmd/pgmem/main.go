@@ -35,7 +35,7 @@ func main() {
 		port     = flag.Int("port", 0, "TCP port on 127.0.0.1 for the template server (0 = pick a free one)")
 		database = flag.String("database", "postgres", "database to create and expose")
 		user     = flag.String("user", "postgres", "superuser name")
-		params   = flag.String("params", "", "extra postgres -c settings, comma separated (e.g. shared_buffers=32MB,log_statement=all)")
+		params   = flag.String("params", os.Getenv("PGMEM_PARAMS"), "extra postgres -c settings, comma separated (e.g. shared_buffers=32MB,log_statement=all; env PGMEM_PARAMS)")
 		verbose  = flag.Bool("log", false, "print the server log to stderr")
 		noStdin  = flag.Bool("no-stdin", false, "do not read control requests from stdin and do not exit when it is closed")
 		heapMiB  = flag.Int("heap-mb", envInt("PGMEM_HEAP_MB", 512), "private heap each PostgreSQL process may use, in MiB (address space reserved up front; env PGMEM_HEAP_MB)")
