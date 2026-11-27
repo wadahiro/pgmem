@@ -1408,3 +1408,14 @@ func (h *Host) TimerPending() bool {
 	}
 	return false
 }
+
+// stopTimers stops the interval timers armed by _setitimer_js. Called on
+// the process's own goroutine, as _setitimer_js is.
+func (h *Host) stopTimers() {
+	for i, t := range h.timerFns {
+		if t != nil {
+			t.Stop()
+			h.timerFns[i] = nil
+		}
+	}
+}

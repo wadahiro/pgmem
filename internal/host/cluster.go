@@ -192,6 +192,9 @@ func (c *Cluster) spawn(parent *Host, forkarg, paramfile string) int32 {
 // postmaster-death pipe now reads as closed.
 func (p *Process) Exit(status int32) {
 	c := p.c
+	// a pending interval timer would keep the host, and through it the
+	// process's whole file system, reachable until it fires
+	p.H.stopTimers()
 	p.FS.CloseAll()
 	c.detachAll(p.H)
 	c.mu.Lock()
